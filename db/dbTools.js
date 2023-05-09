@@ -1,6 +1,7 @@
-const path = require("path");
-const router = require("express").Router();
+const path = require('path');
+const router = require('express').Router();
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
 
 class DBTools {
   constructor() {
@@ -16,7 +17,31 @@ class DBTools {
   }
 
   getNote() {
-
+    if (req.params.title) {
+      console.info(`${req.method} request received to get a single a note`);
+      const noteTitle = req.params.title;
+      fs.readFile('./db/db.json', 'utf8', (err, data) => {
+        if (err) {
+          console.error(err);
+        } 
+        else {
+          // Convert string into JSON object
+          const parsedNotes = JSON.parse(data);
+          for (let i = 0; i < parsedNotes.length; i++)
+          {
+            const currentNote = parsedNotes[i];
+            if (currentNote.title === noteTitle) {
+              res.json(currentNote);
+              return;
+            }
+          }
+          res.status(404).send('Note not found');
+        }
+      });
+    } 
+    else {
+      res.status(400).send('Note title not provided');
+    }
   }
 }
 
